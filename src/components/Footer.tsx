@@ -181,7 +181,8 @@ const Footer = () => {
                   <span className="text-white font-bold text-xl sm:text-2xl">Y</span>
                 </div>
                 <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  your-pharma
+                  MidSupplyPro
+
                 </span>
               </div>
               <p className="text-sm sm:text-base text-slate-300 mb-6 leading-relaxed">
@@ -192,15 +193,17 @@ const Footer = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-start gap-3 text-sm text-slate-300 hover:text-blue-400 transition-colors group">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                  <span>123 Medical Plaza, Healthcare District, NY 10001</span>
+                  <span>Hyderabad,Telangana,India</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-300 hover:text-blue-400 transition-colors group">
                   <Phone className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                  <a href="tel:+1-800-742-7621">+1 (800) 742-7621</a>
+                  <a href="tel:+1-800-742-7621">+91 1234567890</a>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-300 hover:text-blue-400 transition-colors group">
                   <Mail className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                  <a href="mailto:info@your-pharma.com">info@your-pharma.com</a>
+                  <a href="mailto:info@MidSupplyPro
+.com">info@MidSupplyPro
+.com</a>
                 </div>
               </div>
 
@@ -249,9 +252,9 @@ const Footer = () => {
           <div className="border-t border-blue-800/30 pt-6 sm:pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-col md:flex-row items-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-400 text-center md:text-left">
-                <p>© {currentYear} your-pharma. All rights reserved.</p>
+                <p>© {currentYear} MidSupplyPro.All rights reserved.</p>
                 <span className="hidden md:block">•</span>
-                <p className="text-xs">Pharmaceutical excellence since 1995</p>
+                <p className="text-xs">Pharmaceutical excellence since 2023</p>
               </div>
               <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
                 <a href="/privacy" className="text-xs sm:text-sm text-slate-400 hover:text-blue-400 transition-colors">
@@ -277,7 +280,7 @@ const Footer = () => {
           <div className="mt-6 sm:mt-8 p-4 bg-amber-900/30 backdrop-blur-sm border border-amber-700/30 rounded-lg">
             <p className="text-xs text-amber-200/90 text-center leading-relaxed">
               <strong>Important Safety Information:</strong> This website is intended for healthcare professionals and patients seeking information about our products. 
-              Always consult your healthcare provider before starting or stopping any medication. To report adverse events, call 1-800-FDA-1088 or visit www.fda.gov/medwatch.
+              Always consult your healthcare provider before starting or stopping any medication. To report adverse events, call+91 12334567890 or visit www.midsupplypro.com.
             </p>
           </div>
         </div>

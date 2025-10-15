@@ -53,11 +53,11 @@ const Navbar = () => {
             <div className="flex flex-wrap items-center gap-6">
               <a href="tel:+1234567890" className="flex items-center gap-2 hover:text-cyan-300 transition-colors">
                 <Phone size={14} />
-                <span className="hidden sm:inline">+1 (234) 567-890</span>
+                <span className="hidden sm:inline">+91 1234567890</span>
               </a>
-              <a href="mailto:info@yourpharma.com" className="flex items-center gap-2 hover:text-cyan-300 transition-colors">
+              <a href="mailto:info@MidSupplyProcom" className="flex items-center gap-2 hover:text-cyan-300 transition-colors">
                 <Mail size={14} />
-                <span className="hidden md:inline">info@yourpharma.com</span>
+                <span className="hidden md:inline">info@midsupplyPro.com</span>
               </a>
               <div className="flex items-center gap-2 text-cyan-200">
                 <MapPin size={14} />
@@ -91,7 +91,8 @@ const Navbar = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-cyan-700 bg-clip-text text-transparent">
-                  YourPharma
+                  MidSupplyPro
+
                 </span>
                 <span className="text-xs text-gray-500 font-medium">Healthcare Excellence</span>
               </div>

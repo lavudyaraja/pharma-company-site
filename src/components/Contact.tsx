@@ -37,8 +37,8 @@ const Contact = () => {
       icon: Phone,
       title: "Call Us",
       description: "Mon-Fri from 8am to 6pm",
-      detail: "+1 (555) 123-4567",
-      link: "tel:+15551234567",
+      detail: "+91 1234567890",
+      // link: "tel:+15551234567",
       color: "from-blue-500 to-cyan-500",
     },
     {
@@ -53,7 +53,7 @@ const Contact = () => {
       icon: MapPin,
       title: "Visit Us",
       description: "Come say hello",
-      detail: "123 Pharma Street, NY 10001",
+      detail: "Hyderabad,Telangana,India",
       link: "#",
       color: "from-orange-500 to-red-500",
     },
@@ -67,7 +67,7 @@ const Contact = () => {
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-4xl mx-auto mb-16">
+        <div className="text-center max-w-4xl mx-auto mb-8">
           <Badge className="bg-blue-50 text-blue-600 border border-blue-200 px-6 py-2 text-sm font-medium mb-6">
             💬 Get In Touch
           </Badge>
@@ -151,7 +151,7 @@ const Contact = () => {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="John Doe"
+                        placeholder="firstname lastname"
                         className="h-12 border border-gray-200 focus:border-blue-500 rounded-xl transition-all duration-300"
                       />
                     </div>
@@ -166,7 +166,7 @@ const Contact = () => {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="john@example.com"
+                        placeholder="pharma@example.com"
                         className="h-12 border border-gray-200 focus:border-blue-500 rounded-xl transition-all duration-300"
                       />
                     </div>
@@ -182,7 +182,7 @@ const Contact = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+1 (555) 123-4567"
+                        placeholder="+91 1234567890"
                         className="h-12 border border-gray-200 focus:border-blue-500 rounded-xl transition-all duration-300"
                       />
                     </div>
@@ -272,7 +272,7 @@ const Contact = () => {
                   className="bg-white text-gray-900 hover:bg-gray-100 transition-all duration-300 px-8 py-6 text-base font-semibold rounded-xl"
                 >
                   <Phone className="w-5 h-5 mr-2" />
-                  Call Now: +1 (555) 123-4567
+                  Call Now: +91 1234567890
                 </Button>
                 <Button 
                   size="lg"

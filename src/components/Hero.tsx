@@ -202,7 +202,7 @@ const Hero = () => {
                       ))}
                     </div>
                     <p className="text-xs md:text-sm text-gray-600 font-medium mt-1.5">
-                      Trusted by <span className="font-bold text-gray-900">10,000+</span> professionals
+                      Trusted by <span className="font-bold text-gray-900">100+</span> professionals
                     </p>
                   </div>
                 </div>
@@ -210,7 +210,7 @@ const Hero = () => {
                   <p className="text-xs md:text-sm text-gray-600 italic leading-relaxed">
                     "Best pharmaceutical service I've experienced. Fast delivery and excellent quality!"
                   </p>
-                  <p className="text-xs md:text-sm text-gray-700 font-semibold mt-2">— Dr. Sarah Johnson, NYC</p>
+                  <p className="text-xs md:text-sm text-gray-700 font-semibold mt-2">— Dr. Raja,Cardiologist</p>
                 </div>
               </CardContent>
             </Card>

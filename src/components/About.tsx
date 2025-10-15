@@ -66,7 +66,7 @@ const AboutPage = () => {
       altText: "Doctor analyzing data on a tablet.",
       title: "The Idea: Closing the Gap",
       content: [
-        "Founded in 2022, Your-Pharma was born from a simple observation: a disconnected gap between patients, doctors, and pharmacies.",
+        "Founded in 2022, MidSupplyPro was born from a simple observation: a disconnected gap between patients, doctors, and pharmacies.",
         "We envisioned a unified platform powered by modern cloud infrastructure to create a secure, seamless digital health experience for everyone.",
       ],
     },
@@ -136,7 +136,7 @@ const AboutPage = () => {
         <div className="text-center mb-6 sm:mb-16 lg:mb-20">
           <div className="inline-flex items-center gap-2 mb-4 sm:mb-6 px-3 sm:px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-            <span className="text-xs sm:text-sm font-bold text-blue-600">About Your-Pharma</span>
+            <span className="text-xs sm:text-sm font-bold text-blue-600">About MidSupplyPro</span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
             Redefining Healthcare with 
