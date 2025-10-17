@@ -8,6 +8,8 @@ export interface Tablet {
   updatedAt: string;
 }
 
+// For Vercel deployment, we use the relative path
+// Vercel automatically routes /api/* to serverless functions
 const API_BASE = '/api/tablets';
 
 export async function getTablets(): Promise<Tablet[]> {

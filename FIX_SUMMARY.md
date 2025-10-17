@@ -34,12 +34,12 @@ After deploying the project, users were unable to fetch tablets. This was primar
 ## Required Actions for Fix
 
 ### 1. Set Environment Variables
-Create a `.env` file in your project root with:
-```
-DATABASE_URL=your_postgresql_connection_string_here
-```
-
-If deploying to Vercel or another platform, set this as an environment variable in your deployment settings.
+In your Vercel dashboard:
+1. Go to your project settings
+2. Navigate to Environment Variables
+3. Add the following variable:
+   - Name: `DATABASE_URL`
+   - Value: Your PostgreSQL connection string
 
 ### 2. Run Database Migrations
 Execute the following command to ensure your database schema is up to date:
@@ -48,7 +48,16 @@ npx prisma migrate deploy
 ```
 
 ### 3. Redeploy Application
-After making these changes, redeploy your application to Vercel.
+After making these changes:
+1. Push your code to GitHub
+2. Vercel will automatically deploy your application
+3. The API routes will be deployed as serverless functions
+
+### 4. Vercel-Specific Configuration
+The project now includes:
+- Serverless API functions in the `api/` directory
+- Vercel configuration in `vercel.json`
+- Proper CORS handling for cross-origin requests
 
 ## Verification Steps
 

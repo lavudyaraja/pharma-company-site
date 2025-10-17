@@ -187,9 +187,20 @@ pnpm run server
 
 5. The application will be available at `http://localhost:8080` by default.
 
-### Deploying to Cloud Platforms
+### Deploying to Vercel (Recommended)
 
-#### Vercel/Railway/Render
+1. Set the `DATABASE_URL` environment variable in your Vercel dashboard
+2. Push your code to GitHub
+3. Connect your repository to Vercel
+4. Deploy the application
+
+Vercel will automatically:
+- Build the React frontend as static files
+- Deploy API routes as serverless functions
+- Configure routing for both frontend and API
+
+### Deploying to Other Platforms (Railway/Render)
+
 1. Set the `DATABASE_URL` environment variable in your deployment platform
 2. Set the `PORT` environment variable if needed (defaults to 3000)
 3. Deploy the application
