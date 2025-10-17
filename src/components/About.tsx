@@ -21,9 +21,9 @@ import {
 
 const AboutPage = () => {
   const stats = [
-    { icon: Users, value: "500+", label: "Healthcare Professionals", color: "from-blue-500 to-blue-600" },
+    { icon: Users, value: "100+", label: "Healthcare Professionals", color: "from-blue-500 to-blue-600" },
     { icon: Globe, value: "100+", label: "Partner Clinics", color: "from-emerald-500 to-emerald-600" },
-    { icon: Package, value: "500+", label: "Medicine SKUs", color: "from-purple-500 to-purple-600" },
+    { icon: Package, value: "100+", label: "Medicine SKUs", color: "from-purple-500 to-purple-600" },
     { icon: Truck, value: "99.3%", label: "On-Time Delivery", color: "from-orange-500 to-orange-600" },
   ];
 
@@ -54,10 +54,10 @@ const AboutPage = () => {
   ];
 
   const milestones = [
-    { year: "2022", event: "Company Founded", desc: "Started with a vision to digitize healthcare.", icon: Sparkles },
-    { year: "2023", event: "100+ Clinics", desc: "Expanded network across major cities.", icon: Globe },
-    { year: "2024", event: "AI Integration", desc: "Launched intelligent prescription system.", icon: Zap },
-    { year: "2025", event: "Global Expansion", desc: "Operating in 3 countries with 1k+ medicines.", icon: TrendingUp },
+    { year: "2025", event: "Company Founded", desc: "Started with a vision to digitize healthcare.", icon: Sparkles },
+    // { year: "2023", event: "100+ Clinics", desc: "Expanded network across major cities.", icon: Globe },
+    // { year: "2024", event: "AI Integration", desc: "Launched intelligent prescription system.", icon: Zap },
+    // { year: "2025", event: "Global Expansion", desc: "Operating in 3 countries with 1k+ medicines.", icon: TrendingUp },
   ];
 
   const journeySlides = [
@@ -66,7 +66,7 @@ const AboutPage = () => {
       altText: "Doctor analyzing data on a tablet.",
       title: "The Idea: Closing the Gap",
       content: [
-        "Founded in 2022, MidSupplyPro was born from a simple observation: a disconnected gap between patients, doctors, and pharmacies.",
+        "Founded in 2025, TNAAR HEALTHCARE was born from a simple observation: a disconnected gap between patients, doctors, and pharmacies.",
         "We envisioned a unified platform powered by modern cloud infrastructure to create a secure, seamless digital health experience for everyone.",
       ],
     },
@@ -129,14 +129,14 @@ const AboutPage = () => {
   }, [isAutoPlaying, nextSlide]);
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white py-2 sm:py-16 md:py-2 lg:py-4">
+    <section id="about" className="bg-gradient-to-b from-gray-50 to-white py-2 sm:py-16 md:py-2 lg:py-4">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
         <div className="text-center mb-6 sm:mb-16 lg:mb-20">
           <div className="inline-flex items-center gap-2 mb-4 sm:mb-6 px-3 sm:px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-            <span className="text-xs sm:text-sm font-bold text-blue-600">About MidSupplyPro</span>
+            <span className="text-xs sm:text-sm font-bold text-blue-600">About TNAAR HEALTHCARE</span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
             Redefining Healthcare with 

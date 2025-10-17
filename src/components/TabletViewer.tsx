@@ -1,88 +1,122 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import { Pill, Package, IndianRupee, FileText } from 'lucide-react';
+import { getTablets, type Tablet } from '@/integrations/neon/apiClient/tabletsClient';
+import { useToast } from '@/hooks/use-toast';
 
-interface Tablet {
-  id: string;
-  name: string;
-  manufacturer: string;
-  price: number;
-  description: string;
+interface TabletViewerProps {
+  tablets?: Tablet[]; // ✅ Optional tablets prop
+  refreshKey?: number; // ✅ Refresh key to trigger data reload
 }
 
-const TabletViewer = () => {
-  const [tablets, setTablets] = useState<Tablet[]>([]);
+const TabletViewer = ({ tablets, refreshKey = 0 }: TabletViewerProps) => {
+  const [localTablets, setLocalTablets] = useState<Tablet[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
-  // Load tablets from localStorage on component mount
+  // Fetch tablets if not provided via props or if refreshKey changes
   useEffect(() => {
-    const savedTablets = localStorage.getItem("tablets");
-    if (savedTablets) {
-      try {
-        setTablets(JSON.parse(savedTablets));
-      } catch (e) {
-        console.error("Failed to parse tablets from localStorage", e);
+    const fetchTablets = async () => {
+      // If tablets are provided via props, use them
+      if (tablets && tablets.length > 0) {
+        setLocalTablets(tablets);
+        return;
       }
-    }
-  }, []);
+      
+      // Otherwise fetch tablets from API
+      setLoading(true);
+      try {
+        const data = await getTablets();
+        setLocalTablets(data);
+      } catch (error) {
+        console.error('Failed to fetch tablets:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load tablets. Please try again.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Update localStorage when tablets change
-  useEffect(() => {
-    localStorage.setItem("tablets", JSON.stringify(tablets));
-  }, [tablets]);
+    fetchTablets();
+  }, [tablets, refreshKey]);
+
+  const displayTablets = tablets || localTablets;
+
+  if (loading) {
+    return (
+      <div className="bg-background flex items-center justify-center">
+        <div className="flex justify-center items-center min-h-[200px]">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!displayTablets || displayTablets.length === 0) {
+    return (
+      <div className="bg-background flex items-center justify-center">
+        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md w-full">
+          <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <Pill className="h-8 w-8 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Tablets Available</h2>
+          <p className="text-gray-600 mb-6">There are currently no tablets in the system.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="py-10 bg-gradient-to-b from-white to-gray-50">
+    <div className="bg-background py-4">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Available Tablets</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Browse our collection of pharmaceutical tablets
-          </p>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Medicine Tablets</h1>
+          <p className="text-gray-600">Browse our collection of medicine tablets</p>
         </div>
-
-        {tablets.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="mx-auto h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No tablets available</h3>
-            <p className="text-gray-500">Check back later for updates to our tablet inventory.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tablets.map((tablet) => (
-              <div key={tablet.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayTablets.map((tablet) => (
+            <div key={tablet.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="bg-blue-100 p-2 rounded-lg mr-4">
+                      <Pill className="h-6 w-6 text-blue-600" />
+                    </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">{tablet.name}</h3>
-                      <p className="text-sm text-gray-500">{tablet.manufacturer}</p>
+                      <p className="text-sm text-gray-500">{tablet.genericName}</p>
                     </div>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                      ${tablet.price.toFixed(2)}
-                    </span>
                   </div>
-                  
-                  <p className="text-gray-600 mb-6">
-                    {tablet.description || "No description available for this tablet."}
-                  </p>
-                  
-                  <div className="flex justify-between items-center">
-                    <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300">
-                      View Details
-                    </button>
-                    <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      Add to Cart
-                    </button>
+                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+                    ₹{tablet.price.toFixed(2)}
                   </div>
                 </div>
+                
+                {tablet.description && (
+                  <div className="mb-4">
+                    <div className="flex items-start">
+                      <FileText className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-gray-600 text-sm">{tablet.description}</p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex items-center text-sm text-gray-500 mt-4 pt-4 border-t border-gray-100">
+                  <Package className="h-4 w-4 mr-2" />
+                  <span>ID: {tablet.id.substring(0, 8)}...</span>
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-500 mt-2">
+                  <IndianRupee className="h-4 w-4 mr-2" />
+                  <span>Price: ₹{tablet.price.toFixed(2)}</span>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

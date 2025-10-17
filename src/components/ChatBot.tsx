@@ -13,7 +13,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hey there! 👋 Welcome to MediCare Assistant. I'm here 24/7 to help with:\n\n💊 Prescription refills\n📦 Order tracking\n🏥 Store locator\n🩺 Health info\n💰 Pricing & deals",
+      text: "Hello! 👋 I'm TNAAR Healthcare Assistant. How can I help you today?\n\nI can assist you with:\n• Product information\n• Dosage & side effects\n• Company details\n• Promotions & offers\n• Order status\n• Complaints & feedback\n\nPlease ask me anything about TNAAR Healthcare!",
       sender: "bot",
       timestamp: new Date(),
     },
@@ -23,39 +23,111 @@ const ChatBot = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const quickPrompts = [
-    { icon: "📦", label: "Track Order" },
-    { icon: "🏥", label: "Find Store" },
-    { icon: "💊", label: "Refill Rx" },
-    { icon: "📋", label: "Product Info" },
-    { icon: "💰", label: "Discounts" },
-    { icon: "🩺", label: "Health Tips" },
+    { icon: "💊", label: "Products" },
+    { icon: "📦", label: "Order Status" },
+    { icon: "🏥", label: "Store Locator" },
+    { icon: "📋", label: "Complaints" },
+    { icon: "💰", label: "Offers" },
+    { icon: "📞", label: "Contact Us" },
   ];
 
   const botResponses: Record<string, string> = {
-    "track": "📦 Perfect! To track your order, provide your order number. You can also check real-time updates on your dashboard. What's your order number?",
-    "store": "🏥 We have 500+ locations nationwide! Share your location, and I'll find the nearest pharmacy for you.",
-    "prescription": "💊 Easy! Just give me your prescription number, and we'll process your refill. You can also call 1-800-PHARMA or use our app.",
-    "product": "📋 Great! I can help you find any medication or health product. What are you looking for?",
-    "delivery": "🚚 We offer:\n• Standard (2-3 days) - Free\n• Express (1 day) - $5.99\n• Next-day - Premium members\n\nWhich works best for you?",
-    "price": "💰 Amazing deals available!\n• 10% off with loyalty\n• $5 off first order\n• Bundle discounts\n• Generic alternatives\n\nWant details?",
-    "insurance": "🛡️ We accept 99% of major insurance plans. Just provide details at checkout for instant verification!",
-    "covid": "💉 Book COVID shots at any location! Online booking available or call us. Same-day appointments often available.",
-    "urgent": "🚨 EMERGENCY? Call 911 NOW. For urgent pharmacy issues: 1-800-PHARMA (24/7 support).",
-    "help": "📞 Here's what I can help with:\n✓ Orders & Delivery\n✓ Prescriptions\n✓ Store info\n✓ Products\n✓ Insurance\n✓ Health advice\n\nWhat do you need?",
-    "discount": "🎉 Current offers:\n• New member: 10% off\n• Loyalty: 15% rewards\n• Bulk orders: 20% off\n• Seasonal sales this week!\n\nReady to save?",
-    "health": "🩺 Health tips available:\n• Medication info\n• Wellness guides\n• Vitamin recommendations\n• Side effects info\n\nWhat health topic interests you?"
+    // Product Information
+    "product": "We offer a range of pharmaceutical products:\n\n• Heart Health medicines\n• Diabetes care medicines\n• Vitamins & Supplements\n• General wellness products\n\nWhich category are you interested in?",
+    "heart": "HeartCare improves heart health and manages blood pressure.\n\nWould you like me to explain dosage, side effects, or lifestyle tips next?",
+    "diabetes": "TNAAR Healthcare diabetes medicines include insulin regulators, sugar control tablets, and dietary supplements.\n\nDo you want information about a specific diabetes product?",
+    "supplement": "TNAAR Healthcare supplements include vitamins, minerals, and general wellness products.\n\nDo you have a specific health goal in mind?",
+    
+    // Side Effects & Dosage
+    "side": "Common side effects of HeartCare tablets include:\n\n• Mild dizziness\n• Nausea or upset stomach\n• Headache (rare)\n\nI can provide general information, but for personalized advice, please consult a licensed healthcare professional.\n\nDo you want me to tell you the recommended dosage?",
+    "dosage": "Take 1 HeartCare tablet after meals in the morning. Do not exceed the prescribed dosage. Drink plenty of water.\n\nDo you want to know about possible interactions with other medicines?",
+    
+    // Company Info
+    "contact": "You can reach TNAAR Healthcare at:\n\n📞 Phone: +91-XXXX-XXXXXX\n📧 Email: support@tnaarhealthcare.com\n🌐 Website: www.tnaarhealthcare.com\n🏢 Address: 123 Pharma Street, Hyderabad, India\n\nWorking hours: Monday to Friday, 9 AM – 6 PM IST",
+    "address": "Our headquarters is located at:\n\n123 Pharma Street, Hyderabad, India\n\nWe also have stores across the country. Would you like me to provide store locations near you?",
+    
+    // Complaints & Feedback
+    "complaint": "I'm sorry to hear you're having an issue. Could you please provide your order number? I will connect you to our support team for replacement or refund.",
+    "damage": "I'm sorry to hear that you received a damaged product. Could you please provide your order number? I will connect you to our support team for replacement or refund.",
+    
+    // Promotions & Offers
+    "offer": "We have ongoing offers for registered customers. Please visit our website or contact our sales team for the latest promotions.",
+    "discount": "We have ongoing offers for registered customers. Please visit our website or contact our sales team for the latest promotions.",
+    
+    // Multi-language Support
+    "telugu": "Sure! TNAAR Healthcare lo heart health, diabetes care, vitamins & supplements mariyu general wellness products unnayi. Mee health goals ki yedaina specific product gurinchi cheppali?",
+    "supplement telugu": "Sure! TNAAR Healthcare supplements lo vitamins, minerals, and general wellness products unnayi. Mee health goals ki yedaina specific product gurinchi cheppali?",
+    "diabetes telugu": "Sure! TNAAR Healthcare diabetes medicines lo insulin regulators, sugar control tablets, and dietary supplements unnayi. Mee health condition ki yedaina specific info kavala?",
+    
+    // Product Availability
+    "available": "Yes! Our products are available at TNAAR Healthcare stores and online. Would you like me to provide store locations near you?",
+    "hyderabad": "Yes! Our products are available at our Hyderabad stores and online. Would you like me to provide store locations?",
+    
+    // Pricing Queries
+    "price": "HeartCare tablets cost ₹500 for a pack of 30 tablets. Prices may vary by location.\n\nWould you like to know about our current offers?",
+    
+    // Order Status Queries
+    "order": "Please provide your order number. I will check and update you with the latest status.",
+    
+    // Subscription / Repeat Orders
+    "subscribe": "Yes! TNAAR offers subscription services. Would you like me to guide you through the process?",
+    
+    // Product Comparisons
+    "compare": "Both HeartCare and HeartSafe are effective. HeartCare focuses on overall heart health, while HeartSafe targets cholesterol control. Please consult your doctor to choose the right one.",
+    
+    // Lifestyle Recommendations
+    "exercise": "Yes, light exercises are generally safe with HeartCare medication. Avoid intense workouts if your doctor advises. Always follow your doctor's recommendations.",
+    
+    // Handling Frustrated Users
+    "delay": "I understand this is frustrating. Let me connect you to our support team who can assist you immediately.",
+    "angry": "I understand your frustration. Let me connect you to our support team who can assist you immediately.",
+    "upset": "I understand this is frustrating. Let me connect you to our support team who can assist you immediately.",
+    
+    // Personalized Advice Disclaimer
+    "prescribe": "I'm sorry, I cannot provide personalized prescriptions. Please consult your licensed doctor for that.",
+    "personal": "I can provide general information, but for personalized advice, please consult a licensed healthcare professional.",
+    
+    // Out-of-scope Queries
+    "cricket": "I'm here to help with TNAAR Healthcare info. For other queries, please contact our support team.",
+    "weather": "I'm here to help with TNAAR Healthcare info. For other queries, please contact our support team.",
+    
+    // FAQ
+    "hours": "Our working hours are Monday to Friday, 9 AM – 6 PM IST.",
+    "time": "Our working hours are Monday to Friday, 9 AM – 6 PM IST.",
+    
+    // Default responses
+    "hello": "Hello! 👋 I'm TNAAR Healthcare Assistant. How can I help you today?",
+    "hi": "Hi there! 👋 I'm TNAAR Healthcare Assistant. How can I assist you with TNAAR Healthcare today?",
+    "help": "I can help you with:\n• Product information\n• Dosage & side effects\n• Company details\n• Promotions & offers\n• Order status\n• Complaints & feedback\n\nWhat would you like to know?",
+    "thanks": "You're welcome! Is there anything else I can help you with today?",
+    "thank you": "You're welcome! Is there anything else I can help you with today?"
   };
 
   const getResponse = (input: string): string => {
     const lowerInput = input.toLowerCase();
     
+    // Check for specific keywords
     for (const [keyword, response] of Object.entries(botResponses)) {
       if (lowerInput.includes(keyword)) {
         return response;
       }
     }
     
-    return "Thanks for reaching out! 💬 I've got your message. Our team will follow up shortly. Need something urgent? Call 1-800-PHARMA anytime!";
+    // Handle vague queries
+    if (lowerInput.includes("heartcare")) {
+      return "Do you want me to tell you about:\n\n• Dosage\n• Side effects\n• Availability\n• Benefits";
+    }
+    
+    // Personalization example
+    if (lowerInput.match(/\b(my name is|i'm|i am)\b/)) {
+      const nameMatch = lowerInput.match(/\b(my name is|i'm|i am)\s+(\w+)/);
+      if (nameMatch && nameMatch[2]) {
+        return `Hi ${nameMatch[2]}! Welcome to TNAAR Healthcare. How can I help you today?`;
+      }
+    }
+    
+    // Default response
+    return "I'm not sure, but I can connect you to a TNAAR Healthcare representative. Alternatively, I can help with:\n• Product information\n• Dosage & side effects\n• Company details\n• Promotions & offers\n• Order status\n• Complaints & feedback\n\nWhat would you like to know?";
   };
 
   const handleSend = () => {
@@ -151,7 +223,7 @@ const ChatBot = () => {
                   <div className="h-9 w-9 md:h-10 md:w-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
                     <Pill className="h-4 w-4 md:h-5 md:w-5" />
                   </div>
-                  <h3 className="font-bold text-base md:text-lg">MediCare Pro</h3>
+                  <h3 className="font-bold text-base md:text-lg">TNAAR Healthcare Assistant</h3>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -243,7 +315,7 @@ const ChatBot = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
-                placeholder="Ask me anything..."
+                placeholder="Ask about TNAAR Healthcare products..."
                 disabled={isLoading}
                 className="flex-1 px-3 py-2.5 text-sm bg-slate-700/40 border border-slate-600/50 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 text-slate-100 placeholder-slate-500 disabled:opacity-50 transition-all backdrop-blur-sm"
               />

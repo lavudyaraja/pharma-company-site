@@ -1,374 +1,534 @@
-import { useState, useEffect } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { Pill, Trash2, Edit3, Plus, X } from 'lucide-react';
+import { createTablet, updateTablet, deleteTablet, getTablets, type Tablet } from '@/integrations/neon/apiClient/tabletsClient';
+import { useToast } from '@/hooks/use-toast';
 
-interface Tablet {
-  id: string;
-  name: string;
-  manufacturer: string;
-  price: number;
-  description: string;
-}
+function TabletForm({
+  onSubmit,
+  onCancel,
+  editingTablet = null
+}: {
+  onSubmit: (tablet: Tablet) => void;
+  onCancel: () => void;
+  editingTablet?: Tablet | null;
+}) {
+  const { toast } = useToast();
 
-const Tablets = () => {
-  // Hardcoded admin key for simplicity
-  const ADMIN_KEY = "admin123";
-  
-  // State management
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [keyInput, setKeyInput] = useState("");
-  const [keyError, setKeyError] = useState("");
-  const [tablets, setTablets] = useState<Tablet[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    manufacturer: "",
-    price: "",
-    description: ""
+  const [formData, setFormData] = useState<Omit<Tablet, 'id' | 'createdAt' | 'updatedAt'>>({
+    name: editingTablet?.name || '',
+    genericName: editingTablet?.genericName || '',
+    price: editingTablet?.price || 0,
+    description: editingTablet?.description || ''
   });
-  const [formError, setFormError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
-  // Load tablets from localStorage on component mount
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    const savedTablets = localStorage.getItem("tablets");
-    if (savedTablets) {
-      try {
-        setTablets(JSON.parse(savedTablets));
-      } catch (e) {
-        console.error("Failed to parse tablets from localStorage", e);
+    if (editingTablet) {
+      setFormData({
+        name: editingTablet.name,
+        genericName: editingTablet.genericName,
+        price: editingTablet.price,
+        description: editingTablet.description || ''
+      });
+      setErrors({});
+    }
+  }, [editingTablet]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let newValue: string | number = value;
+    
+    // Special handling for price field
+    if (name === 'price') {
+      if (value === '') {
+        newValue = 0; // Keep as 0 when empty for internal state
+      } else {
+        const parsedValue = parseFloat(value);
+        newValue = isNaN(parsedValue) ? 0 : parsedValue;
       }
     }
-  }, []);
-
-  // Update localStorage when tablets change
-  useEffect(() => {
-    localStorage.setItem("tablets", JSON.stringify(tablets));
-  }, [tablets]);
-
-  // Handle admin access
-  const handleAdminAccess = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (keyInput === ADMIN_KEY) {
-      setIsAdmin(true);
-      setKeyError("");
-      setKeyInput("");
-    } else {
-      setKeyError("Invalid admin key. Please try again.");
-    }
-  };
-
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: newValue
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
-  // Validate form data
-  const validateForm = (): boolean => {
-    if (!formData.name.trim()) {
-      setFormError("Tablet name is required");
-      return false;
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name || !formData.name.trim()) {
+      newErrors.name = 'Medicine name is required';
     }
     
-    if (!formData.manufacturer.trim()) {
-      setFormError("Manufacturer is required");
-      return false;
+    if (!formData.genericName || !formData.genericName.trim()) {
+      newErrors.genericName = 'Generic name is required';
     }
     
-    const price = parseFloat(formData.price);
-    if (isNaN(price) || price <= 0) {
-      setFormError("Price must be a positive number");
-      return false;
+    // For price, we need to make sure it's greater than 0 when submitting
+    if (formData.price <= 0) {
+      newErrors.price = 'Price must be greater than 0';
     }
     
-    setFormError("");
-    return true;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData);
+    
     if (!validateForm()) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fill in all required fields correctly.",
+      });
       return;
     }
     
-    const newTablet: Tablet = {
-      id: Date.now().toString(),
-      name: formData.name.trim(),
-      manufacturer: formData.manufacturer.trim(),
-      price: parseFloat(formData.price),
-      description: formData.description.trim()
-    };
+    setIsSubmitting(true);
     
-    setTablets(prev => [...prev, newTablet]);
-    setFormData({
-      name: "",
-      manufacturer: "",
-      price: "",
-      description: ""
-    });
-    setSuccessMessage("Tablet added successfully!");
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setSuccessMessage("");
-    }, 3000);
+    try {
+      let tablet: Tablet;
+
+      if (editingTablet) {
+        console.log('Updating tablet:', editingTablet.id);
+        tablet = await updateTablet(editingTablet.id, formData);
+        toast({
+          title: "Success",
+          description: "Tablet updated successfully!",
+        });
+      } else {
+        console.log('Creating new tablet');
+        tablet = await createTablet(formData);
+        toast({
+          title: "Success",
+          description: "Tablet added successfully!",
+        });
+      }
+
+      console.log('Operation successful, tablet:', tablet);
+
+      if (!editingTablet) {
+        setFormData({
+          name: '',
+          genericName: '',
+          price: 0,
+          description: ''
+        });
+      }
+
+      onSubmit(tablet);
+    } catch (error: any) {
+      console.error('Tablet operation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || `Failed to ${editingTablet ? 'update' : 'add'} tablet. Please try again.`,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Reset admin access
-  const handleLogout = () => {
-    setIsAdmin(false);
-  };
-
-  // Render admin access form
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8">
-            <div className="text-center">
-              <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Admin Access</h2>
-              <p className="mt-2 text-sm text-gray-600">
-                Enter the secret key to manage tablets
-              </p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 p-3 sm:p-4 md:p-6 flex items-center justify-center">
+      <div className="w-full max-w-2xl bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 my-4">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="bg-green-100 p-2 sm:p-3 rounded-lg sm:rounded-full">
+              <Pill className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-green-600" />
             </div>
-
-            <form className="mt-8 space-y-6" onSubmit={handleAdminAccess}>
-              <div>
-                <label htmlFor="admin-key" className="block text-sm font-medium text-gray-700">
-                  Secret Key
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="admin-key"
-                    name="admin-key"
-                    type="password"
-                    required
-                    value={keyInput}
-                    onChange={(e) => setKeyInput(e.target.value)}
-                    className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Enter admin key"
-                  />
-                </div>
-                {keyError && (
-                  <p className="mt-2 text-sm text-red-600">{keyError}</p>
-                )}
-              </div>
-
-              <div>
-                <button
-                  type="submit"
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
-                >
-                  Access Admin Panel
-                </button>
-              </div>
-            </form>
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
+              {editingTablet ? 'Edit Medicine' : 'Add New Medicine'}
+            </h2>
           </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
         </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              Medicine Name *
+            </label>
+            <input
+              id="name"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`w-full px-3 py-2.5 sm:px-4 sm:py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-base ${
+                errors.name ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="e.g., Paracetamol"
+            />
+            {errors.name && <p className="mt-1.5 text-sm text-red-600">{errors.name}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="genericName" className="block text-sm font-medium text-gray-700 mb-2">
+              Generic Name *
+            </label>
+            <input
+              id="genericName"
+              type="text"
+              name="genericName"
+              value={formData.genericName}
+              onChange={handleChange}
+              className={`w-full px-3 py-2.5 sm:px-4 sm:py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-base ${
+                errors.genericName ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="e.g., Acetaminophen"
+            />
+            {errors.genericName && <p className="mt-1.5 text-sm text-red-600">{errors.genericName}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+              Price (₹) *
+            </label>
+            <input
+              id="price"
+              type="number"
+              name="price"
+              value={formData.price === 0 ? '' : formData.price}
+              onChange={handleChange}
+              step="0.01"
+              min="0.01"
+              inputMode="decimal"
+              className={`w-full px-3 py-2.5 sm:px-4 sm:py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-base ${
+                errors.price ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="e.g., 10.99"
+            />
+            {errors.price && <p className="mt-1.5 text-sm text-red-600">{errors.price}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description || ''}
+              onChange={handleChange}
+              rows={3}
+              className="w-full px-3 py-2.5 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-base resize-none"
+              placeholder="Brief description about the medicine..."
+            />
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="w-full sm:flex-1 bg-gray-200 text-gray-700 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-base"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:flex-1 bg-green-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-base"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {editingTablet ? 'Updating...' : 'Adding...'}
+                </>
+              ) : (
+                editingTablet ? 'Update Tablet' : 'Add Tablet'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function TabletList({ onEdit, refreshTrigger }: { onEdit: (tablet: Tablet) => void; refreshTrigger: number }) {
+  const [tablets, setTablets] = useState<Tablet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchTablets();
+  }, [refreshTrigger]);
+
+  const fetchTablets = async () => {
+    setLoading(true);
+    try {
+      const data = await getTablets();
+      setTablets(data);
+    } catch (error: any) {
+      console.error('Failed to fetch tablets:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to load tablets. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteTablet(id);
+      setTablets(tablets.filter(tablet => tablet.id !== id));
+      toast({
+        title: "Success",
+        description: `Tablet "${name}" deleted successfully!`,
+      });
+    } catch (error: any) {
+      console.error('Failed to delete tablet:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to delete tablet. Please try again.",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
-  // Render admin panel
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Tablet Management</h1>
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300"
-          >
-            Logout
-          </button>
-        </div>
-
-        {/* Add Tablet Form */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-12">
-          <div className="px-6 py-8 sm:p-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Tablet</h2>
-            
-            {successMessage && (
-              <div className="mb-6 rounded-lg bg-green-50 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-green-800">{successMessage}</p>
+    <>
+      {/* Mobile Card View */}
+      <div className={`lg:hidden space-y-3 ${tablets.length === 0 ? 'hidden' : ''}`}>
+        {tablets.map((tablet) => (
+          <div key={tablet.id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Pill className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold text-gray-900 mb-1">{tablet.name}</h3>
+                <p className="text-sm text-gray-600 mb-1">{tablet.genericName}</p>
+                {tablet.description && (
+                  <p className="text-sm text-gray-500 mb-2 line-clamp-2">{tablet.description}</p>
+                )}
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-lg font-bold text-green-600">₹{tablet.price.toFixed(2)}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onEdit(tablet)}
+                      className="p-2 text-indigo-600 hover:text-indigo-900 rounded-lg hover:bg-indigo-50 transition-colors active:scale-95"
+                      aria-label="Edit"
+                    >
+                      <Edit3 className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(tablet.id, tablet.name)}
+                      className="p-2 text-red-600 hover:text-red-900 rounded-lg hover:bg-red-50 transition-colors active:scale-95"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
-            
-            {formError && (
-              <div className="mb-6 rounded-lg bg-red-50 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-red-800">{formError}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                <div className="sm:col-span-3">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    Tablet Name *
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="text"
-                      name="name"
-                      id="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border px-3 py-3"
-                      placeholder="e.g., Aspirin"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label htmlFor="manufacturer" className="block text-sm font-medium text-gray-700">
-                    Manufacturer *
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="text"
-                      name="manufacturer"
-                      id="manufacturer"
-                      value={formData.manufacturer}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border px-3 py-3"
-                      placeholder="e.g., Bayer"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                    Price (Rupees) *
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="number"
-                      name="price"
-                      id="price"
-                      min="0"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border px-3 py-3"
-                      placeholder="e.g., 9.99"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-6">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                    Description
-                  </label>
-                  <div className="mt-1">
-                    <textarea
-                      id="description"
-                      name="description"
-                      rows={3}
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border px-3 py-3"
-                      placeholder="Brief description of the tablet"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="ml-3 inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
-                >
-                  Add Tablet
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
-
-        {/* Tablets List */}
-        {/* <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8 sm:p-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Tablet Inventory</h2>
-            
-            {tablets.length === 0 ? (
-              <div className="text-center py-12">
-                <svg className="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No tablets</h3>
-                <p className="mt-1 text-sm text-gray-500">Get started by adding a new tablet.</p>
-              </div>
-            ) : (
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                        Name
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Manufacturer
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Price
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                        Description
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {tablets.map((tablet) => (
-                      <tr key={tablet.id} className="hover:bg-gray-50">
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                          {tablet.name}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {tablet.manufacturer}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          ${tablet.price.toFixed(2)}
-                        </td>
-                        <td className="px-3 py-4 text-sm text-gray-500">
-                          {tablet.description || "No description"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div> */}
+        ))}
       </div>
+
+      {/* Show empty state for both mobile and desktop */}
+      {tablets.length === 0 && (
+        <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 md:p-12 text-center">
+          <Pill className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">No tablets found</h3>
+          <p className="text-sm sm:text-base text-gray-500">Add your first tablet using the button above</p>
+        </div>
+      )}
+
+      {/* Desktop Table View */}
+      <div className={`hidden lg:block bg-white rounded-xl shadow-md overflow-hidden ${tablets.length === 0 ? 'hidden' : ''}`}>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Medicine
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Generic Name
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Price
+                </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {tablets.map((tablet) => (
+                <tr key={tablet.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Pill className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{tablet.name}</div>
+                        {tablet.description && (
+                          <div className="text-sm text-gray-500 max-w-xs truncate">{tablet.description}</div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{tablet.genericName}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                    ₹{tablet.price.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end items-center gap-2">
+                      <button
+                        onClick={() => onEdit(tablet)}
+                        className="text-indigo-600 hover:text-indigo-900 p-2 rounded-lg hover:bg-indigo-50 transition-colors"
+                        aria-label="Edit"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(tablet.id, tablet.name)}
+                        className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        aria-label="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default function TabletsManager() {
+  const [editingTablet, setEditingTablet] = useState<Tablet | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleFormSubmit = async (tablet: Tablet) => {
+    // Force refresh the tablet list
+    setRefreshKey(prev => prev + 1);
+    setEditingTablet(null);
+    setShowForm(false);
+    
+    // Call global refresh functions if they exist
+    // @ts-ignore
+    if (typeof window.refreshTablets === 'function') {
+      // @ts-ignore
+      window.refreshTablets();
+    }
+    
+    // @ts-ignore
+    if (typeof window.refreshTabletListing === 'function') {
+      // @ts-ignore
+      window.refreshTabletListing();
+    }
+    
+    // Small delay to ensure state updates
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleCancel = () => {
+    setEditingTablet(null);
+    setShowForm(false);
+  };
+
+  const handleEdit = (tablet: Tablet) => {
+    setEditingTablet(tablet);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddNew = () => {
+    setEditingTablet(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100">
+      {showForm ? (
+        <div className="w-full">
+          <TabletForm 
+            onSubmit={handleFormSubmit} 
+            onCancel={handleCancel} 
+            editingTablet={editingTablet} 
+          />
+        </div>
+      ) : (
+        <div className="p-3 sm:p-4 md:p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-1">
+                  Tablet Management
+                </h1>
+                <p className="text-sm sm:text-base text-gray-600">
+                  Manage your medicine inventory
+                </p>
+              </div>
+              <button
+                onClick={handleAddNew}
+                className="w-full sm:w-auto bg-green-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add New Tablet</span>
+              </button>
+            </div>
+
+            <TabletList onEdit={handleEdit} refreshTrigger={refreshKey} />
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Tablets;
+}

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Shield, Award, Users, Star, TrendingUp, CheckCircle, Play, Sparkles, Clock, Globe } from "lucide-react";
-
+// import { Links } from "react-links"
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -12,7 +12,7 @@ const Hero = () => {
     {
       title: "Healthcare Solutions You Can Trust",
       subtitle: "Leading pharmaceutical innovation with cutting-edge research and unwavering commitment to patient safety.",
-      badge: "ISO 9001:2015 Certified",
+      badge: "ISO Certified",
       highlight: "Trusted Worldwide"
     },
     {
@@ -23,9 +23,9 @@ const Hero = () => {
     },
     {
       title: "Your Health, Our Priority",
-      subtitle: "Comprehensive healthcare solutions backed by 25+ years of excellence in pharmaceutical care.",
+      subtitle: "Comprehensive healthcare solutions backed by 6 months of excellence in pharmaceutical care.",
       badge: "HIPAA Compliant",
-      highlight: "Excellence Since 1998"
+      highlight: "Excellence Since 2025"
     }
   ];
 
@@ -33,20 +33,20 @@ const Hero = () => {
     { icon: CheckCircle, text: "FDA Approved", color: "text-green-600" },
     { icon: Clock, text: "24/7 Support", color: "text-blue-600" },
     { icon: Shield, text: "100% Secure", color: "text-purple-600" },
-    { icon: Globe, text: "Global Shipping", color: "text-orange-600" },
+    { icon: Globe, text: "India Shipping", color: "text-orange-600" },
   ];
 
   const stats = [
-    { icon: Users, value: "500K+", label: "Patients Served", color: "from-blue-500 to-cyan-500" },
+    { icon: Users, value: "500+", label: "Patients Served", color: "from-blue-500 to-cyan-500" },
     { icon: Shield, value: "100%", label: "Quality Assured", color: "from-green-500 to-emerald-500" },
-    { icon: Award, value: "25+", label: "Years Experience", color: "from-purple-500 to-pink-500" },
+    { icon: Award, value: "6+ ", label: "Months Experience", color: "from-purple-500 to-pink-500" },
     { icon: Star, value: "4.9/5", label: "Customer Rating", color: "from-yellow-500 to-orange-500" },
   ];
 
   const trustItems = [
     { icon: Shield, title: "100% Secure", desc: "SSL Encrypted & HIPAA Compliant" },
     { icon: Award, title: "Award-Winning", desc: "Recognized by Healthcare Leaders" },
-    { icon: TrendingUp, title: "Fastest Growing", desc: "Pharma Platform in 2024" },
+    { icon: TrendingUp, title: "Fastest Growing", desc: "Pharma Platform in 2025" },
   ];
 
   useEffect(() => {
@@ -68,7 +68,7 @@ const Hero = () => {
   const slide = slides[currentSlide];
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center pt-16 pb-12 md:pt-20 md:pb-16 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <section id="home" className="relative flex items-center pt-8 pb-8 md:pt-8 md:pb-8 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="absolute top-10 right-10 w-72 h-72 md:w-96 md:h-96 bg-blue-300/5 rounded-full blur-3xl animate-pulse"></div>
@@ -118,21 +118,25 @@ const Hero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2">
+              <a href="/products">
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 md:px-8 h-11 md:h-12 text-sm md:text-base font-semibold rounded-lg group"
               >
                 Explore Products
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
+                </Button>
+              </a>
+              <a href ="video.mp4">
               <Button 
                 size="lg" 
                 variant="outline"
-                className="border border-gray-300 hover:bg-gray-50 transition-all duration-300 px-6 md:px-8 h-11 md:h-12 text-sm md:text-base font-semibold rounded-lg"
+                className="border border-gray-300 hover:bg-slate-950 transition-all duration-300 px-6 md:px-8 h-11 md:h-12 text-sm md:text-base font-semibold rounded-lg"
               >
                 <Play className="mr-2 w-4 h-4" />
                 Watch Demo
-              </Button>
+                </Button>
+                </a>
             </div>
 
             {/* Carousel Indicators */}
@@ -182,7 +186,7 @@ const Hero = () => {
             </div>
 
             {/* Trust Card */}
-            <Card className="bg-white/90 backdrop-blur border border-gray-200 shadow-lg">
+            {/* <Card className="bg-white/90 backdrop-blur border border-gray-200 shadow-lg">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-start gap-3 md:gap-4 mb-4">
                   <div className="flex -space-x-2">
@@ -213,7 +217,7 @@ const Hero = () => {
                   <p className="text-xs md:text-sm text-gray-700 font-semibold mt-2">— Dr. Raja,Cardiologist</p>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
 
