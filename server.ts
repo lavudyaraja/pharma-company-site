@@ -3,15 +3,38 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getTabletsHandler, getTabletByIdHandler, createTabletHandler, updateTabletHandler, deleteTabletHandler } from './src/integrations/neon/api/tablets.ts';
+import prisma from './server/prismaClient.ts';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:8081'],
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:8080',
+      'http://localhost:8081',
+      'http://localhost:5173', // Vite default port
+      'http://localhost:3000', // Common development port
+      'https://pharma-company-site.vercel.app', // Vercel deployment
+      // Add your production domain here
+      process.env.FRONTEND_URL || '' // For deployment environments
+    ];
+    
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || origin.endsWith('.railway.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
@@ -41,6 +64,18 @@ app.delete('/api/tablets/:id', async (req, res) => {
   const { id } = req.params;
   const { status, body } = await deleteTabletHandler(id);
   res.status(status).json(body);
+});
+
+// Health check endpoint
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ status: 'OK', message: 'Server and database are running' });
+  } catch (error: any) {
+    console.error('Health check failed:', error);
+    res.status(500).json({ status: 'ERROR', message: 'Database connection failed', error: error.message });
+  }
 });
 
 // --- Static hosting for frontend build ---

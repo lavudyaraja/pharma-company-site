@@ -11,10 +11,19 @@ export interface Tablet {
 const API_BASE = '/api/tablets';
 
 export async function getTablets(): Promise<Tablet[]> {
-  const res = await fetch(API_BASE, { credentials: 'include' });
-  if (!res.ok) throw new Error('Failed to fetch tablets');
-  const data = await res.json();
-  return data.tablets as Tablet[];
+  try {
+    const res = await fetch(API_BASE, { credentials: 'include' });
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Failed to fetch tablets. Status: ${res.status}, Response: ${errorText}`);
+      throw new Error(`Failed to fetch tablets. Status: ${res.status}`);
+    }
+    const data = await res.json();
+    return data.tablets as Tablet[];
+  } catch (error) {
+    console.error('Error fetching tablets:', error);
+    throw error;
+  }
 }
 
 export async function createTablet(payload: Omit<Tablet, 'id' | 'createdAt' | 'updatedAt'>): Promise<Tablet> {

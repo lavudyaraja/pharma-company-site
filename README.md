@@ -159,9 +159,7 @@ Tablets are stored in the browser's localStorage:
 
 ### Supabase Integration
 The project is configured to use Supabase for backend services, with environment variables stored in the `.env` file:
-- `VITE_SUPABASE_PROJECT_ID`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-- `VITE_SUPABASE_URL`
+
 
 ## Deployment
 
@@ -172,7 +170,37 @@ To deploy the application:
 pnpm run build
 ```
 
-2. The built files will be in the `dist/` directory, ready for deployment to any static hosting service.
+2. Set up your PostgreSQL database and run migrations:
+```bash
+npx prisma migrate deploy
+```
+
+3. Set the required environment variables:
+```bash
+DATABASE_URL=your_postgresql_connection_string
+```
+
+4. Start the server:
+```bash
+pnpm run server
+```
+
+5. The application will be available at `http://localhost:8080` by default.
+
+### Deploying to Cloud Platforms
+
+#### Vercel/Railway/Render
+1. Set the `DATABASE_URL` environment variable in your deployment platform
+2. Set the `PORT` environment variable if needed (defaults to 3000)
+3. Deploy the application
+
+#### Health Check
+After deployment, you can check if the server and database are properly connected by accessing:
+`YOUR_DEPLOYED_URL/api/health`
+
+This endpoint will return:
+- `{ status: 'OK', message: 'Server and database are running' }` if everything is working
+- Error details if there are connection issues
 
 ## Contributing
 
@@ -184,7 +212,7 @@ pnpm run build
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.S
 
 ---
 

@@ -9,12 +9,23 @@ type ApiResponse = {
 // GET /api/tablets - Get all tablets
 export async function getTabletsHandler(): Promise<ApiResponse> {
   try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+    
     const tablets = await prisma.tablet.findMany({
       orderBy: { createdAt: 'desc' },
     });
     return { status: 200, body: { tablets } };
   } catch (error: any) {
     console.error('API Error:', error);
+    
+    // Provide more specific error information
+    if (error.code === 'P1001') {
+      return { status: 500, body: { error: 'Database Connection Error', details: 'Cannot connect to database. Check your DATABASE_URL environment variable.' } };
+    } else if (error.code === 'P2021') {
+      return { status: 500, body: { error: 'Database Error', details: 'Table does not exist. Run database migrations.' } };
+    }
+    
     return { status: 500, body: { error: 'Internal Server Error', details: error.message } };
   }
 }
